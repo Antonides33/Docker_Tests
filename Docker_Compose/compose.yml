@@ -23,3 +23,5 @@ services:
   redis:
     # Use the official Redis image from Docker Hub, with the 'alpine' tag (a lightweight version).
     image: "redis:alpine"
+    depends_on:
+      - web
