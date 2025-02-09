@@ -1,1 +1,25 @@
+# Define the services that will be run by Docker Compose.
+services:
 
+  # Service named 'web'.
+  web:
+    # Build the Docker image for this service using the Dockerfile in the current directory ('.').
+    build: .
+
+    # Map port 8000 on the host machine to port 5000 in the container.
+    # This allows you to access the application on http://localhost:8000.
+    ports:
+      - "8000:5000"
+
+    # Configuration specific to development mode.
+    develop:
+      # Set up file watching and synchronization for development.
+      watch:
+        - action: sync  # Synchronize files between the host and the container.
+          path: .       # Watch the current directory ('.') on the host machine for changes.
+          target: /code # Synchronize changes to the '/code' directory inside the container.
+
+  # Service named 'redis'.
+  redis:
+    # Use the official Redis image from Docker Hub, with the 'alpine' tag (a lightweight version).
+    image: "redis:alpine"
