@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # Service 1: Web Application
+  web:
+    build: .
+    ports:
+      - "8000:5000"  # Map host port 8000 to container port 5000
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - app_data:/code  # Use a named volume for application data
+      - ./src:/app/src  # Bind mount for development
+    networks:
+      - my_custom_network
+        aliases:
+          - webapp
+          - frontend
+    depends_on:
+      - redis
+    deploy:
+      replicas: 3  # Scale the service to 3 replicas (requires Docker Swarm)
+
+  # Service 2: Redis Database
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data  # Use a named volume for Redis data
+    networks:
+      - my_custom_network
+        aliases:
+          - cache
+          - redisdb
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Service 3: Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf  # Bind mount for custom Nginx config
+    networks:
+      - my_custom_network
+    depends_on:
+      - web
+
+  # Service 4: Database (PostgreSQL)
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # Use an external volume for PostgreSQL data
+    networks:
+      - my_custom_network
+
+# Define custom networks
+networks:
+  my_custom_network:
+    driver: bridge
+    name: my_app_network  # Assign a custom name to the network
+
+# Define volumes
+volumes:
+  app_data:  # Named volume for application data
+    driver: local
+  redis_data:  # Named volume for Redis data
+    driver: local
+  pgdata:  # External volume for PostgreSQL data
+    external: true  # This volume must be created manually before use
