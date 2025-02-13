@@ -6,6 +6,15 @@ services:
     # Build the Docker image for this service using the Dockerfile in the current directory ('.').
     build: .
 
+     environment:
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+
+    ports:
+      - "${APP_PORT}:3000"
+
     # Map port 80 on the host machine to port 5000 in the container.
     # This allows you to access the application on http://localhost:80.
     ports:
