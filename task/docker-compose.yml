@@ -1,0 +1,53 @@
+services:
+  app:
+    image: node:16
+    container_name: app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./app:/usr/src/app
+    working_dir: /usr/src/app
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - REDIS_HOST=${REDIS_HOST}
+    networks:
+      - dev-network
+    command: sh -c "npm install && npm start"
+
+  db:
+    image: postgres:13
+    container_name: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+    aliases:
+      - database
+
+  redis:
+    image: redis:6
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - dev-network
+    aliases:
+      - cache
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  dev-network:
+    driver: bridge
